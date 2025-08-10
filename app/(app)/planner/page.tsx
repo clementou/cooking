@@ -26,11 +26,12 @@ function getWeekRange(startDate: Date) {
 export default async function PlannerPage({
   searchParams,
 }: {
-  searchParams: { week?: string };
+  searchParams: Promise<{ week?: string }>;
 }) {
   // Parse week from query params or use current week
-  const weekStart = searchParams.week 
-    ? new Date(searchParams.week + 'T00:00:00')
+  const params = await searchParams;
+  const weekStart = params.week 
+    ? new Date(params.week + 'T00:00:00')
     : getCurrentWeekStart();
     
   const { start, end } = getWeekRange(weekStart);

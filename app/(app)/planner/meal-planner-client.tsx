@@ -124,7 +124,14 @@ export default function MealPlannerClient({
 
       const data = await response.json();
       setEntries(
-        data.entries.map((e: any) => ({
+        data.entries.map((e: {
+          id: string;
+          date: string;
+          mealSlot: string;
+          servings?: number;
+          notes?: string;
+          recipe?: { id: string; title: string };
+        }) => ({
           ...e,
           recipeTitle: e.recipe?.title || null,
           recipeId: e.recipe?.id || null,

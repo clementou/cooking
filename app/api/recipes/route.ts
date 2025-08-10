@@ -142,10 +142,11 @@ export async function GET(req: Request) {
   const q = (searchParams.get("q") || "").trim();
   const limit = Number(searchParams.get("limit") || 20);
   const where = q ? ilike(recipes.title, `%${q}%`) : undefined;
-  const rows = await db
+  const query = db
     .select({ id: recipes.id, title: recipes.title })
     .from(recipes)
-    .where(where as any)
     .limit(limit);
+  
+  const rows = where ? await query.where(where) : await query;
   return NextResponse.json({ recipes: rows });
 }

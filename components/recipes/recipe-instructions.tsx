@@ -27,7 +27,7 @@ export function RecipeInstructions({ sections, unsectionedInstructions }: Recipe
       <CardContent className="space-y-6">
         {unsectionedInstructions.length > 0 && (
           <div className="space-y-4">
-            {unsectionedInstructions.map((instruction, index) => (
+            {unsectionedInstructions.map((instruction) => (
               <div key={instruction.id} className="flex gap-4">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
                   {instruction.stepNumber}

@@ -7,12 +7,11 @@ import { z } from "zod";
 const createEntrySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   mealSlot: z.enum(["breakfast", "lunch", "dinner", "snack"]),
-  recipeId: z.string().uuid(),
+  recipeId: z.uuid(),
   servings: z.number().optional(),
   notes: z.string().optional(),
 });
 
-const updateEntrySchema = createEntrySchema.partial();
 
 // GET /api/meal-plan?start=YYYY-MM-DD&end=YYYY-MM-DD
 export async function GET(req: NextRequest) {
@@ -107,7 +106,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid request data", details: error.errors },
+        { error: "Invalid request data", details: error.issues },
         { status: 400 }
       );
     }

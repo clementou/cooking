@@ -29,7 +29,7 @@ export async function createRecipeAction(formData: FormData) {
     })
     .parse(raw);
 
-  const [created] = await db
+  await db
     .insert(recipes)
     .values({
       title: parsed.title,

@@ -36,7 +36,7 @@ export default function AiRecipeGenerator() {
   const [generatedRecipe, setGeneratedRecipe] =
     useState<RecipeEditorValues | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [, setIsSaving] = useState(false);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {

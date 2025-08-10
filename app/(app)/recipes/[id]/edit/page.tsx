@@ -3,8 +3,9 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import EditRecipeClientWrapper from "./client-wrapper";
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const recipe = await getRecipeById(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const recipe = await getRecipeById(id);
   
   if (!recipe) {
     return {
@@ -18,8 +19,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function EditRecipePage({ params }: { params: { id: string } }) {
-  const recipe = await getRecipeById(params.id);
+export default async function EditRecipePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const recipe = await getRecipeById(id);
 
   if (!recipe) {
     notFound();
@@ -29,7 +31,7 @@ export default async function EditRecipePage({ params }: { params: { id: string 
 
   return (
     <EditRecipeClientWrapper 
-      recipeId={params.id} 
+      recipeId={id} 
       initialValues={formValues}
       recipeTitle={recipe.title}
     />

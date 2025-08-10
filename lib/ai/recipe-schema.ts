@@ -80,23 +80,45 @@ export function transformAIRecipeToFormValues(aiRecipe: AIGeneratedRecipe) {
   };
 }
 
+interface FormValues {
+  title: string;
+  description?: string;
+  servings: { amount: number };
+  times: {
+    total: { value: number; unit: string };
+    breakdown?: boolean;
+    prep?: { value: number; unit: string };
+    cook?: { value: number; unit: string };
+  };
+  notes: string[];
+  storage: string[];
+  imageUrl?: string;
+  cuisine?: string;
+  sourceUrl?: string;
+  sections: Array<{
+    name?: string;
+    ingredients: Array<{ item: string; [key: string]: unknown }>;
+    steps: Array<{ text: string; [key: string]: unknown }>;
+  }>;
+}
+
 // Transform form values to API request format
-export function transformToAPIFormat(formValues: any) {
-  const ingredients: Record<string, any[]> = {};
-  const instructions: Record<string, any[]> = {};
+export function transformToAPIFormat(formValues: FormValues) {
+  const ingredients: Record<string, Array<{ item: string; [key: string]: unknown }>> = {};
+  const instructions: Record<string, Array<{ text: string; [key: string]: unknown }>> = {};
 
   for (const section of formValues.sections) {
     const sectionName = section.name || "Main";
     
     if (section.ingredients.length > 0) {
       ingredients[sectionName] = section.ingredients.filter(
-        (ing: any) => ing.item && ing.item.trim() !== ""
+        (ing) => ing.item && ing.item.trim() !== ""
       );
     }
     
     if (section.steps.length > 0) {
       instructions[sectionName] = section.steps.filter(
-        (step: any) => step.text && step.text.trim() !== ""
+        (step) => step.text && step.text.trim() !== ""
       );
     }
   }
@@ -114,8 +136,8 @@ export function transformToAPIFormat(formValues: any) {
         ? `${formValues.times.cook.value} ${formValues.times.cook.unit}`
         : undefined,
     },
-    notes: formValues.notes.filter((n: string) => n && n.trim() !== ""),
-    storage: formValues.storage.filter((s: string) => s && s.trim() !== ""),
+    notes: formValues.notes.filter((n) => n && n.trim() !== ""),
+    storage: formValues.storage.filter((s) => s && s.trim() !== ""),
     imageUrl: formValues.imageUrl || undefined,
     cuisine: formValues.cuisine || undefined,
     sourceUrl: formValues.sourceUrl || undefined,

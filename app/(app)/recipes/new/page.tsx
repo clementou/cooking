@@ -2,12 +2,13 @@ import NewRecipeClientWrapper from "./client-wrapper";
 import AiRecipeGenerator from "@/components/recipes/ai-recipe-generator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default function NewRecipePage({
+export default async function NewRecipePage({
   searchParams,
 }: {
-  searchParams: { tab?: string };
+  searchParams: Promise<{ tab?: string }>;
 }) {
-  const defaultTab = searchParams.tab || "manual";
+  const params = await searchParams;
+  const defaultTab = params.tab || "manual";
   
   return (
     <div className="space-y-4">

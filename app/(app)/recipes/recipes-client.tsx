@@ -291,11 +291,13 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
                 {/* Image placeholder or actual image */}
                 <div className="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
                   {recipe.imageUrl ? (
-                    <img
-                      src={recipe.imageUrl}
-                      alt={recipe.title}
-                      className="w-full h-full object-cover"
-                    />
+                    <picture>
+                      <img
+                        src={recipe.imageUrl}
+                        alt={recipe.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </picture>
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <BookOpen className="w-16 h-16 text-orange-300" />

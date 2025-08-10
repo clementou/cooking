@@ -75,7 +75,7 @@ export function ShoppingListModal({ currentWeekStart }: ShoppingListModalProps) 
       setCopied(true);
       toast.success("Shopping list copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch {
       toast.error("Failed to copy to clipboard");
     }
   };

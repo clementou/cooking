@@ -26,39 +26,39 @@ interface RecipeIngredientsProps {
   unsectionedIngredients: Ingredient[];
 }
 
-function formatQuantity(numerator: number | null, denominator: number | null): string {
-  if (!numerator || !denominator) return "";
-  
-  const decimal = numerator / denominator;
-  
-  if (decimal % 1 === 0) {
-    return decimal.toString();
-  }
-  
-  const wholeNumber = Math.floor(decimal);
-  const fraction = decimal - wholeNumber;
-  
-  const fractionMap: { [key: number]: string } = {
-    0.25: "¼",
-    0.5: "½",
-    0.75: "¾",
-    0.333: "⅓",
-    0.667: "⅔",
-    0.125: "⅛",
-    0.375: "⅜",
-    0.625: "⅝",
-    0.875: "⅞",
-  };
-  
-  const fractionRounded = Math.round(fraction * 1000) / 1000;
-  const fractionString = fractionMap[fractionRounded] || fraction.toFixed(2);
-  
-  if (wholeNumber > 0) {
-    return `${wholeNumber} ${fractionString}`;
-  }
-  
-  return fractionString;
-}
+// function formatQuantity(numerator: number | null, denominator: number | null): string {
+//   if (!numerator || !denominator) return "";
+//   
+//   const decimal = numerator / denominator;
+//   
+//   if (decimal % 1 === 0) {
+//     return decimal.toString();
+//   }
+//   
+//   const wholeNumber = Math.floor(decimal);
+//   const fraction = decimal - wholeNumber;
+//   
+//   const fractionMap: { [key: number]: string } = {
+//     0.25: "¼",
+//     0.5: "½",
+//     0.75: "¾",
+//     0.333: "⅓",
+//     0.667: "⅔",
+//     0.125: "⅛",
+//     0.375: "⅜",
+//     0.625: "⅝",
+//     0.875: "⅞",
+//   };
+//   
+//   const fractionRounded = Math.round(fraction * 1000) / 1000;
+//   const fractionString = fractionMap[fractionRounded] || fraction.toFixed(2);
+//   
+//   if (wholeNumber > 0) {
+//     return `${wholeNumber} ${fractionString}`;
+//   }
+//   
+//   return fractionString;
+// }
 
 function IngredientItem({ ingredient }: { ingredient: Ingredient }) {
   const [checked, setChecked] = useState(false);
@@ -67,7 +67,7 @@ function IngredientItem({ ingredient }: { ingredient: Ingredient }) {
     <div className="flex items-start gap-3 py-1">
       <Checkbox
         checked={checked}
-        onCheckedChange={setChecked}
+        onCheckedChange={(checkedState) => setChecked(checkedState === true)}
         className="mt-0.5"
       />
       <label 

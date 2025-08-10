@@ -17,9 +17,8 @@ interface EditRecipeClientWrapperProps {
 }
 
 function buildRecipeRequest(values: RecipeEditorValues) {
-  const sections: Record<string, any> = {};
-  const ingredients: Record<string, any[]> = {};
-  const instructions: Record<string, any[]> = {};
+  const ingredients: Record<string, Array<{ item: string; [key: string]: unknown }>> = {};
+  const instructions: Record<string, Array<{ text: string; [key: string]: unknown }>> = {};
 
   // Process sections
   for (const section of values.sections) {
@@ -69,7 +68,7 @@ export default function EditRecipeClientWrapper({
   recipeTitle 
 }: EditRecipeClientWrapperProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(values: RecipeEditorValues) {

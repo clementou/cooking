@@ -7,8 +7,9 @@ import { RecipeNotes } from "@/components/recipes/recipe-notes";
 import { RecipeActions } from "@/components/recipes/recipe-actions";
 import { Metadata } from "next";
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const recipe = await getRecipeById(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const recipe = await getRecipeById(id);
   
   if (!recipe) {
     return {
@@ -22,8 +23,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function RecipePage({ params }: { params: { id: string } }) {
-  const recipe = await getRecipeById(params.id);
+export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const recipe = await getRecipeById(id);
 
   if (!recipe) {
     notFound();

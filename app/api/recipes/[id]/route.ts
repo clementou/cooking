@@ -28,13 +28,14 @@ function buildRawIngredientText(line: IngredientLine): string {
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const [recipe] = await db
       .select()
       .from(recipes)
-      .where(eq(recipes.id, params.id))
+      .where(eq(recipes.id, id))
       .limit(1);
 
     if (!recipe) {
@@ -53,9 +54,10 @@ export async function GET(
 
 export async function PUT(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const json = await req.json();
     const full = recipeSchema.parse(json);
 
@@ -63,7 +65,7 @@ export async function PUT(
     const [existing] = await db
       .select()
       .from(recipes)
-      .where(eq(recipes.id, params.id))
+      .where(eq(recipes.id, id))
       .limit(1);
 
     if (!existing) {
@@ -87,13 +89,13 @@ export async function PUT(
           sourceUrl: full.sourceUrl,
           updatedAt: new Date(),
         })
-        .where(eq(recipes.id, params.id));
+        .where(eq(recipes.id, id));
 
       // Delete existing related data
-      await tx.delete(recipeSections).where(eq(recipeSections.recipeId, params.id));
-      await tx.delete(recipeIngredients).where(eq(recipeIngredients.recipeId, params.id));
-      await tx.delete(instructions).where(eq(instructions.recipeId, params.id));
-      await tx.delete(recipeNotes).where(eq(recipeNotes.recipeId, params.id));
+      await tx.delete(recipeSections).where(eq(recipeSections.recipeId, id));
+      await tx.delete(recipeIngredients).where(eq(recipeIngredients.recipeId, id));
+      await tx.delete(instructions).where(eq(instructions.recipeId, id));
+      await tx.delete(recipeNotes).where(eq(recipeNotes.recipeId, id));
 
       // Re-insert sections
       const sectionIds = new Map<string | null, string>();
@@ -117,7 +119,7 @@ export async function PUT(
         const [section] = await tx
           .insert(recipeSections)
           .values({
-            recipeId: params.id,
+            recipeId: id,
             name: sectionName,
             orderIndex: sectionOrderIndex++,
           })
@@ -133,7 +135,7 @@ export async function PUT(
         for (let i = 0; i < lines.length; i++) {
           const line = lines[i];
           await tx.insert(recipeIngredients).values({
-            recipeId: params.id,
+            recipeId: id,
             sectionId: sectionId ?? undefined,
             rawText: buildRawIngredientText(line),
             quantityNumerator:
@@ -156,7 +158,7 @@ export async function PUT(
         const sectionId = sectionIds.get(sectionName) ?? null;
         for (const step of steps) {
           await tx.insert(instructions).values({
-            recipeId: params.id,
+            recipeId: id,
             sectionId: sectionId ?? undefined,
             stepNumber: step.step,
             text: step.text,
@@ -169,7 +171,7 @@ export async function PUT(
       let noteOrderIndex = 0;
       for (const text of full.notes || []) {
         await tx.insert(recipeNotes).values({
-          recipeId: params.id,
+          recipeId: id,
           kind: "note",
           text,
           orderIndex: noteOrderIndex++,
@@ -178,7 +180,7 @@ export async function PUT(
 
       for (const text of full.storage || []) {
         await tx.insert(recipeNotes).values({
-          recipeId: params.id,
+          recipeId: id,
           kind: "storage",
           text,
           orderIndex: noteOrderIndex++,
@@ -186,7 +188,7 @@ export async function PUT(
       }
     });
 
-    return NextResponse.json({ success: true, id: params.id });
+    return NextResponse.json({ success: true, id });
   } catch (error) {
     if (error instanceof Error) {
       console.error("Failed to update recipe:", error);
@@ -204,12 +206,13 @@ export async function PUT(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const result = await db
       .delete(recipes)
-      .where(eq(recipes.id, params.id))
+      .where(eq(recipes.id, id))
       .returning();
 
     if (result.length === 0) {
