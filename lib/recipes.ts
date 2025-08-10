@@ -7,7 +7,6 @@ import {
   recipeSections,
 } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
-import type { RecipeEditorValues } from "@/components/recipes/recipe-form";
 
 export interface RecipeWithDetails {
   id: string;
@@ -148,24 +147,65 @@ export async function getAllRecipes() {
   return await db.select().from(recipes).orderBy(desc(recipes.createdAt));
 }
 
-function parseTimeString(timeStr: string): { value: number; unit: "min" | "hr" } {
+function parseTimeString(timeStr: string): {
+  value: number;
+  unit: "min" | "hr";
+} {
   const match = timeStr.match(/(\d+)\s*(hr?|hours?|min|minutes?)/i);
   if (!match) {
     return { value: 0, unit: "min" };
   }
-  
+
   const value = parseInt(match[1], 10);
   const unitStr = match[2].toLowerCase();
   const unit = unitStr.startsWith("h") ? "hr" : "min";
-  
+
   return { value, unit };
 }
 
-export function transformRecipeToFormValues(recipe: RecipeWithDetails): RecipeEditorValues {
-  const sectionMap = new Map<string, {
-    ingredients: Array<{ item: string; amount?: number; unit?: string; notes?: string }>;
+// This function is currently unused but keeping for potential future use
+type RecipeFormData = {
+  title: string;
+  description: string;
+  servings: { amount: number };
+  times: {
+    total: { value: number; unit: string };
+    breakdown?: boolean;
+    prep?: { value: number; unit: string };
+    cook?: { value: number; unit: string };
+  };
+  notes: string[];
+  storage: string[];
+  imageUrl?: string;
+  cuisine?: string;
+  sourceUrl?: string;
+  sections: Array<{
+    name: string;
+    ingredients: Array<{
+      item: string;
+      amount?: number;
+      unit?: string;
+      notes?: string;
+    }>;
     steps: Array<{ step: number; text: string; notes?: string }>;
-  }>();
+  }>;
+};
+
+export function transformRecipeToFormValues(
+  recipe: RecipeWithDetails
+): RecipeFormData {
+  const sectionMap = new Map<
+    string,
+    {
+      ingredients: Array<{
+        item: string;
+        amount?: number;
+        unit?: string;
+        notes?: string;
+      }>;
+      steps: Array<{ step: number; text: string; notes?: string }>;
+    }
+  >();
 
   // Initialize sections
   for (const section of recipe.sections) {
@@ -176,7 +216,10 @@ export function transformRecipeToFormValues(recipe: RecipeWithDetails): RecipeEd
   }
 
   // Add a "Main" section for unsectioned items if needed
-  if (recipe.unsectionedIngredients.length > 0 || recipe.unsectionedInstructions.length > 0) {
+  if (
+    recipe.unsectionedIngredients.length > 0 ||
+    recipe.unsectionedInstructions.length > 0
+  ) {
     sectionMap.set("Main", {
       ingredients: [],
       steps: [],
@@ -190,7 +233,7 @@ export function transformRecipeToFormValues(recipe: RecipeWithDetails): RecipeEd
       const parsed = parseIngredientText(ingredient.rawText);
       sectionData.ingredients.push(parsed);
     }
-    
+
     for (const instruction of section.instructions) {
       sectionData.steps.push({
         step: instruction.stepNumber,
@@ -231,7 +274,7 @@ export function transformRecipeToFormValues(recipe: RecipeWithDetails): RecipeEd
   // Parse notes
   const notes: string[] = [];
   const storage: string[] = [];
-  
+
   for (const note of recipe.notes) {
     if (note.kind === "storage") {
       storage.push(note.text);
@@ -244,7 +287,7 @@ export function transformRecipeToFormValues(recipe: RecipeWithDetails): RecipeEd
   const prepTime = parseTimeString(recipe.timePrep);
   const cookTime = parseTimeString(recipe.timeCook);
   const totalTime = parseTimeString(recipe.timeTotal);
-  
+
   const hasBreakdown = recipe.timePrep !== "" || recipe.timeCook !== "";
 
   return {
@@ -262,23 +305,37 @@ export function transformRecipeToFormValues(recipe: RecipeWithDetails): RecipeEd
     imageUrl: recipe.imageUrl || undefined,
     cuisine: recipe.cuisine || undefined,
     sourceUrl: recipe.sourceUrl || undefined,
-    sections: sections.length > 0 ? sections : [{
-      name: "Main",
-      ingredients: [{ item: "", amount: undefined, unit: undefined, notes: undefined }],
-      steps: [{ step: 1, text: "", notes: undefined }],
-    }],
+    sections:
+      sections.length > 0
+        ? sections
+        : [
+            {
+              name: "Main",
+              ingredients: [
+                {
+                  item: "",
+                  amount: undefined,
+                  unit: undefined,
+                  notes: undefined,
+                },
+              ],
+              steps: [{ step: 1, text: "", notes: undefined }],
+            },
+          ],
   };
 }
 
-function parseIngredientText(rawText: string): { 
-  item: string; 
-  amount?: number; 
-  unit?: string; 
+function parseIngredientText(rawText: string): {
+  item: string;
+  amount?: number;
+  unit?: string;
   notes?: string;
 } {
   // Basic parsing - can be improved
-  const match = rawText.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?\s+(.+?)(?:\s*\(([^)]+)\))?$/);
-  
+  const match = rawText.match(
+    /^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)?\s+(.+?)(?:\s*\(([^)]+)\))?$/
+  );
+
   if (match) {
     return {
       amount: parseFloat(match[1]),
@@ -287,7 +344,7 @@ function parseIngredientText(rawText: string): {
       notes: match[4] || undefined,
     };
   }
-  
+
   // If no amount/unit pattern found, treat whole thing as item
   const notesMatch = rawText.match(/^(.+?)\s*\(([^)]+)\)$/);
   if (notesMatch) {
@@ -296,6 +353,6 @@ function parseIngredientText(rawText: string): {
       notes: notesMatch[2],
     };
   }
-  
+
   return { item: rawText };
 }

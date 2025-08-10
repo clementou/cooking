@@ -10,15 +10,33 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  transformAIRecipeToFormValues,
-  transformToAPIFormat,
-} from "@/lib/ai/recipe-schema";
 import { AlertCircle, ChefHat, Loader2, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import RecipeForm, { RecipeEditorValues } from "./recipe-form";
+import { RecipeEditor } from "./recipe-editor";
+
+type RecipeEditorData = {
+  title: string;
+  description: string;
+  servingsAmount: number;
+  timePrep?: string;
+  timeCook?: string;
+  timeTotal: string;
+  cuisine?: string | null;
+  imageUrl?: string | null;
+  sections: Array<{
+    name: string;
+    ingredients: Array<{
+      item: string;
+      amount?: number;
+      unit?: string;
+      notes?: string;
+    }>;
+    instructions: Array<{ text: string; stepNumber: number; notes?: string }>;
+  }>;
+  notes?: string[];
+};
 
 const EXAMPLE_PROMPTS = [
   "Quick and healthy weeknight dinner for 4 people",
@@ -34,9 +52,8 @@ export default function AiRecipeGenerator() {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedRecipe, setGeneratedRecipe] =
-    useState<RecipeEditorValues | null>(null);
+    useState<RecipeEditorData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [, setIsSaving] = useState(false);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
@@ -63,8 +80,45 @@ export default function AiRecipeGenerator() {
         throw new Error(data.error || "Failed to generate recipe");
       }
 
-      const formValues = transformAIRecipeToFormValues(data.recipe);
-      setGeneratedRecipe(formValues);
+      // Transform AI recipe to match RecipeEditor format
+      const aiRecipe = data.recipe;
+      const editorData: RecipeEditorData = {
+        title: aiRecipe.title,
+        description: aiRecipe.description,
+        servingsAmount: aiRecipe.servings.amount,
+        timePrep: aiRecipe.times.prep || "",
+        timeCook: aiRecipe.times.cook || "",
+        timeTotal: aiRecipe.times.total,
+        cuisine: aiRecipe.cuisine || null,
+        imageUrl: null,
+        sections: aiRecipe.sections.map(
+          (section: {
+            name: string;
+            ingredients: Array<{
+              item: string;
+              amount?: number;
+              unit?: string;
+              notes?: string;
+            }>;
+            instructions: Array<{ text: string; step: number; notes?: string }>;
+          }) => ({
+            name: section.name,
+            ingredients: section.ingredients.map((ing) => ({
+              item: ing.item,
+              amount: ing.amount,
+              unit: ing.unit,
+              notes: ing.notes,
+            })),
+            instructions: section.instructions.map((inst) => ({
+              text: inst.text,
+              stepNumber: inst.step,
+              notes: inst.notes,
+            })),
+          })
+        ),
+        notes: aiRecipe.notes || [],
+      };
+      setGeneratedRecipe(editorData);
     } catch (error) {
       console.error("Generation error:", error);
       setError(
@@ -75,12 +129,54 @@ export default function AiRecipeGenerator() {
     }
   };
 
-  const handleSave = async (values: RecipeEditorValues) => {
-    setIsSaving(true);
+  const handleSave = async (data: RecipeEditorData) => {
     setError(null);
 
     try {
-      const requestBody = transformToAPIFormat(values);
+      // Build request body for API with AI source type
+      const ingredients: Record<
+        string,
+        Array<{ item: string; amount?: number; unit?: string; notes?: string }>
+      > = {};
+      const instructions: Record<
+        string,
+        Array<{ text: string; step: number; notes?: string }>
+      > = {};
+
+      data.sections.forEach((section) => {
+        if (section.ingredients.length > 0) {
+          ingredients[section.name] = section.ingredients.filter(
+            (ing) => ing.item && ing.item.trim() !== ""
+          );
+        }
+
+        if (section.instructions.length > 0) {
+          instructions[section.name] = section.instructions
+            .filter((step) => step.text && step.text.trim() !== "")
+            .map((step) => ({
+              text: step.text,
+              step: step.stepNumber,
+              notes: step.notes,
+            }));
+        }
+      });
+
+      const requestBody = {
+        title: data.title,
+        description: data.description || "",
+        servings: { amount: data.servingsAmount },
+        times: {
+          total: data.timeTotal,
+          prep: data.timePrep || "",
+          cook: data.timeCook || "",
+        },
+        notes: data.notes?.filter((n: string) => n && n.trim() !== "") || [],
+        imageUrl: data.imageUrl || undefined,
+        cuisine: data.cuisine || undefined,
+        sourceType: "ai", // Mark as AI-generated
+        ingredients,
+        instructions,
+      };
 
       const response = await fetch("/api/recipes", {
         method: "POST",
@@ -90,22 +186,20 @@ export default function AiRecipeGenerator() {
         body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to save recipe");
+        throw new Error(result.error || "Failed to save recipe");
       }
 
-      toast.success("Recipe created successfully!");
-      router.push(`/recipes/${data.id}`);
+      toast.success("AI recipe created successfully!");
+      router.push(`/recipes/${result.id}`);
     } catch (error) {
       console.error("Save error:", error);
       setError(
         error instanceof Error ? error.message : "Failed to save recipe"
       );
       toast.error("Failed to save recipe");
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -143,7 +237,11 @@ export default function AiRecipeGenerator() {
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-            <RecipeForm onSubmit={handleSave} defaultValues={generatedRecipe} />
+            <RecipeEditor
+              mode="create"
+              onSave={handleSave}
+              initialData={generatedRecipe}
+            />
           </CardContent>
         </Card>
       </div>

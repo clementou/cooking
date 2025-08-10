@@ -9,14 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -31,12 +23,11 @@ import {
   ChefHat,
   Clock,
   Import,
-  Plus,
   Search,
   Sparkles,
   Timer,
   Users,
-  Utensils
+  Utensils,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -181,44 +172,15 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Recipes</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            <span className="gradient-text">My Recipes</span>
+          </h1>
           <p className="text-muted-foreground mt-1">
             {filteredRecipes.length}{" "}
             {filteredRecipes.length === 1 ? "recipe" : "recipes"} in your
             collection
           </p>
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="lg" className="gap-2">
-              <Plus className="w-5 h-5" />
-              Add Recipe
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Create a recipe</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => router.push("/recipes/new?tab=manual")}
-            >
-              <ChefHat className="mr-2 h-4 w-4" />
-              Manual Entry
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push("/recipes/new?tab=ai")}
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              AI Generate
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push("/recipes/new?tab=import")}
-            >
-              <Import className="mr-2 h-4 w-4" />
-              Import from URL
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       {/* Filters Bar */}
@@ -230,14 +192,14 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
             placeholder="Search recipes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
+            className="pl-9 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
           />
         </div>
 
         <div className="flex gap-2">
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-[160px]">
-              <ArrowUpDown className="w-4 h-4 mr-2" />
+            <SelectTrigger className="w-[160px] focus:ring-2 focus:ring-orange-500">
+              <ArrowUpDown className="w-4 h-4 mr-2 text-orange-600" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -250,8 +212,8 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
           </Select>
 
           <Select value={timeFilter} onValueChange={setTimeFilter}>
-            <SelectTrigger className="w-[150px]">
-              <Timer className="w-4 h-4 mr-2" />
+            <SelectTrigger className="w-[150px] focus:ring-2 focus:ring-orange-500">
+              <Timer className="w-4 h-4 mr-2 text-orange-600" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -265,8 +227,8 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
 
           {cuisines.length > 0 && (
             <Select value={cuisineFilter} onValueChange={setCuisineFilter}>
-              <SelectTrigger className="w-[150px]">
-                <Utensils className="w-4 h-4 mr-2" />
+              <SelectTrigger className="w-[150px] focus:ring-2 focus:ring-orange-500">
+                <Utensils className="w-4 h-4 mr-2 text-orange-600" />
                 <SelectValue placeholder="All Cuisines" />
               </SelectTrigger>
               <SelectContent>
@@ -287,7 +249,7 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredRecipes.map((recipe) => (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
-              <Card className="h-full hover:shadow-xl transition-all duration-200 hover:-translate-y-1 cursor-pointer overflow-hidden group">
+              <Card className="h-full hover:shadow-xl transition-all duration-200 hover:-translate-y-1 cursor-pointer overflow-hidden group border-orange-100 hover:border-orange-300">
                 {/* Image placeholder or actual image */}
                 <div className="relative h-48 bg-gradient-to-br from-orange-100 to-red-100 overflow-hidden">
                   {recipe.imageUrl ? (
@@ -398,39 +360,6 @@ export default function RecipesClient({ initialRecipes }: RecipesClientProps) {
           </div>
         </Card>
       )}
-
-      {/* Floating Action Button for Mobile */}
-      <div className="fixed bottom-6 right-6 sm:hidden">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="icon" className="h-14 w-14 rounded-full shadow-lg">
-              <Plus className="w-6 h-6" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>Create a recipe</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => router.push("/recipes/new?tab=manual")}
-            >
-              <ChefHat className="mr-2 h-4 w-4" />
-              Manual Entry
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push("/recipes/new?tab=ai")}
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              AI Generate
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => router.push("/recipes/new?tab=import")}
-            >
-              <Import className="mr-2 h-4 w-4" />
-              Import from URL
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
     </div>
   );
 }

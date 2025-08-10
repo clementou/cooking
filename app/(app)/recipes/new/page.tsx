@@ -2,7 +2,6 @@
 
 import AiRecipeGenerator from "@/components/recipes/ai-recipe-generator";
 import { RecipeEditor } from "@/components/recipes/recipe-editor";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { toast } from "sonner";
@@ -107,27 +106,36 @@ function NewRecipeContent() {
     }
   };
 
+  const getTitle = () => {
+    switch (defaultTab) {
+      case "ai":
+        return "Generate Recipe with AI";
+      case "import":
+        return "Import Recipe from URL";
+      default:
+        return "Create New Recipe";
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-semibold tracking-tight">New Recipe</h1>
-      <Tabs defaultValue={defaultTab} className="w-full">
-        <TabsList>
-          <TabsTrigger value="manual">Manual</TabsTrigger>
-          <TabsTrigger value="ai">AI</TabsTrigger>
-          <TabsTrigger value="import">Import</TabsTrigger>
-        </TabsList>
-        <TabsContent value="manual" className="pt-4">
-          <RecipeEditor mode="create" onSave={handleSave} />
-        </TabsContent>
-        <TabsContent value="ai" className="pt-4">
-          <AiRecipeGenerator />
-        </TabsContent>
-        <TabsContent value="import" className="pt-4">
+    <div className="space-y-4 animate-in">
+      <h1 className="text-2xl font-bold tracking-tight">
+        <span className="gradient-text">{getTitle()}</span>
+      </h1>
+
+      {defaultTab === "manual" && (
+        <RecipeEditor mode="create" onSave={handleSave} />
+      )}
+
+      {defaultTab === "ai" && <AiRecipeGenerator />}
+
+      {defaultTab === "import" && (
+        <div className="rounded-lg border border-dashed border-orange-300 bg-orange-50/50 p-8 text-center">
           <p className="text-sm text-muted-foreground">
-            Import from URL placeholder.
+            Import from URL feature coming soon...
           </p>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 }

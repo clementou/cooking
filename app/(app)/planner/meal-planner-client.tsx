@@ -124,18 +124,20 @@ export default function MealPlannerClient({
 
       const data = await response.json();
       setEntries(
-        data.entries.map((e: {
-          id: string;
-          date: string;
-          mealSlot: string;
-          servings?: number;
-          notes?: string;
-          recipe?: { id: string; title: string };
-        }) => ({
-          ...e,
-          recipeTitle: e.recipe?.title || null,
-          recipeId: e.recipe?.id || null,
-        }))
+        data.entries.map(
+          (e: {
+            id: string;
+            date: string;
+            mealSlot: string;
+            servings?: number;
+            notes?: string;
+            recipe?: { id: string; title: string };
+          }) => ({
+            ...e,
+            recipeTitle: e.recipe?.title || null,
+            recipeId: e.recipe?.id || null,
+          })
+        )
       );
     } catch (error) {
       console.error("Error loading week data:", error);
@@ -243,7 +245,9 @@ export default function MealPlannerClient({
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-2xl font-semibold">Meal Planner</h1>
+            <h1 className="text-2xl font-bold">
+              <span className="gradient-text">Meal Planner</span>
+            </h1>
             <Badge variant="outline" className="gap-1">
               <Calendar className="w-3 h-3" />
               {formatWeekRange()}
@@ -303,7 +307,7 @@ export default function MealPlannerClient({
                 placeholder="Search recipes..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
               />
             </div>
 
