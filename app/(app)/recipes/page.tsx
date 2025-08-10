@@ -3,11 +3,20 @@ import { recipes } from "@/db/schema";
 import { desc } from "drizzle-orm";
 import RecipesClient from "./recipes-client";
 
-export default async function RecipesPage() {
-  const rows = await db
-    .select()
-    .from(recipes)
-    .orderBy(desc(recipes.createdAt));
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
-  return <RecipesClient initialRecipes={rows} />;
+export default async function RecipesPage() {
+  try {
+    const rows = await db
+      .select()
+      .from(recipes)
+      .orderBy(desc(recipes.createdAt));
+
+    return <RecipesClient initialRecipes={rows} />;
+  } catch (error) {
+    console.error('Failed to fetch recipes:', error);
+    // Return empty state if database is not available
+    return <RecipesClient initialRecipes={[]} />;
+  }
 }
