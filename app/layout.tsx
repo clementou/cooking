@@ -1,5 +1,14 @@
+import AppSidebar from "@/components/app-sidebar";
+import { Separator } from "@/components/ui/separator";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,11 +32,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <div className="flex h-12 items-center gap-2 px-3">
+              <SidebarTrigger />
+              <Separator orientation="vertical" className="mx-1 h-6" />
+              <Link href="/" className="font-medium">
+                Cookbook
+              </Link>
+            </div>
+            <Separator />
+            <div className="p-4">{children}</div>
+          </SidebarInset>
+        </SidebarProvider>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );
