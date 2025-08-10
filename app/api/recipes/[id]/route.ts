@@ -32,11 +32,10 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const [recipe] = await db
-      .select()
-      .from(recipes)
-      .where(eq(recipes.id, id))
-      .limit(1);
+    
+    // Import getRecipeById to get full recipe with details
+    const { getRecipeById } = await import("@/lib/recipes");
+    const recipe = await getRecipeById(id);
 
     if (!recipe) {
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });

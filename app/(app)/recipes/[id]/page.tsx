@@ -1,16 +1,20 @@
-import { getRecipeById } from "@/lib/recipes";
-import { notFound } from "next/navigation";
 import { RecipeHeader } from "@/components/recipes/recipe-header";
 import { RecipeIngredients } from "@/components/recipes/recipe-ingredients";
 import { RecipeInstructions } from "@/components/recipes/recipe-instructions";
 import { RecipeNotes } from "@/components/recipes/recipe-notes";
-import { RecipeActions } from "@/components/recipes/recipe-actions";
+import { getRecipeById } from "@/lib/recipes";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import RecipeEditWrapper from "./recipe-edit-wrapper";
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
   const { id } = await params;
   const recipe = await getRecipeById(id);
-  
+
   if (!recipe) {
     return {
       title: "Recipe Not Found",
@@ -23,7 +27,11 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export default async function RecipePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function RecipePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const recipe = await getRecipeById(id);
 
@@ -32,11 +40,7 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-4">
-        <RecipeActions recipeId={recipe.id} recipeTitle={recipe.title} />
-      </div>
-      
+    <RecipeEditWrapper recipeId={recipe.id} recipeTitle={recipe.title}>
       <RecipeHeader
         title={recipe.title}
         description={recipe.description}
@@ -69,6 +73,6 @@ export default async function RecipePage({ params }: { params: Promise<{ id: str
           <RecipeNotes notes={recipe.notes} />
         </div>
       )}
-    </div>
+    </RecipeEditWrapper>
   );
 }

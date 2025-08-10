@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Printer, Share2 } from "lucide-react";
+import { ArrowLeft, Printer, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -11,7 +11,7 @@ interface RecipeActionsProps {
   recipeTitle: string;
 }
 
-export function RecipeActions({ recipeId, recipeTitle }: RecipeActionsProps) {
+export function RecipeActions({ recipeTitle }: RecipeActionsProps) {
   const [isPrinting, setIsPrinting] = useState(false);
 
   const handlePrint = () => {
@@ -56,12 +56,6 @@ export function RecipeActions({ recipeId, recipeTitle }: RecipeActionsProps) {
       </Link>
 
       <div className="flex items-center gap-2">
-        <Link href={`/recipes/${recipeId}/edit`}>
-          <Button variant="outline" size="sm" className="gap-2">
-            <Edit className="w-4 h-4" />
-            Edit
-          </Button>
-        </Link>
 
         <Button
           variant="outline"
